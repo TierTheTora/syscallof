@@ -267,7 +267,8 @@ parse_sysnums (struct syscall_info si,
 			args[i] = atol(whereptr);
 			if (args[i] > si.sysmax
 			 || getsys_ent(si, args[i]) == -1) {
-				printf("Number `%lu` is not a syscall.\n",
+				printf("Number `%lu` "
+				       "is not a syscall.\n",
 					args[i]);
 				return(1);
 			}
