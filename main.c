@@ -43,6 +43,7 @@ main (int argc, char **argv)
 	return(0);
 
 	putusag:
+		printf("%d\n", argc);
 		puts("Usage: syscallof [OPTIONS...] NUMBERS...");
 		return(1);
 }

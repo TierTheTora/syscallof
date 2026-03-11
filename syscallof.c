@@ -52,6 +52,7 @@ print_help ()
 	     "\t--help  show this text\n"
 	     "\t--name  search by syscall name not number\n"
 	);
+	exit(0);
 }
 
 void
@@ -85,45 +86,119 @@ set_arch (struct syscall_info *si, enum arch ar)
 }
 
 int
-set_arg (struct syscall_info *si, char *opt, bool *arch_set)
+parse_gnu_opt (struct syscall_info *si, char *opt,
+               bool *arch_set)
 {
 	if (strcmp(opt, "--x86_64") == 0) {
 		set_arch(si, X86_64);
 		*arch_set = true;
-		return 0;
+		return(0);
 	}
 	if (strcmp(opt, "--arm") == 0) {
 		set_arch(si, ARM);
 		*arch_set = true;
-		return 0;
+		return(0);
 	}
 	if (strcmp(opt, "--aarch64") == 0) {
 		set_arch(si, AARCH64);
 		*arch_set = true;
-		return 0;
+		return(0);
 	}
 	if (strcmp(opt, "--x86") == 0) {
 		set_arch(si, X86);
 		*arch_set = true;
-		return 0;
+		return(0);
 	}
 	if (strcmp(opt, "--help") == 0) {
 		print_help();
-		exit(0);
 	}
 	if (strcmp(opt, "--name") == 0) {
 		si->sa.search_name = true;
-		return 0;
+		return(0);
 	}
 
-	return 1;
+	/* invalid --%s option */
+	if (strncmp(opt, "--", 2) == 0) {
+		return(1);
+	}
+
+	/* not an option */
+	return(2);
+}
+
+int
+parse_unix_opt (struct syscall_info *si, char *opt,
+               bool *arch_set)
+{
+	size_t i;
+
+	if (opt[0] == '-') {
+		for (i = 1; i < strlen(opt); i++) {
+			switch (opt[i]) {
+			case 'x':
+				set_arch(si, X86_64);
+				*arch_set = true;
+				break;
+			case 'a':
+				set_arch(si, ARM);
+				*arch_set = true;
+				break;
+			case 'A':
+				set_arch(si, AARCH64);
+				*arch_set = true;
+				break;
+			case 'X':
+				set_arch(si, X86);
+				*arch_set = true;
+				break;
+			case 'h':
+				print_help();
+				break;
+			case 'n':
+				si->sa.search_name = true;
+				break;
+			default:
+				return(1);
+			}
+		}
+		return(0);
+	}
+
+	/* not an option */
+	return(2);
+}
+
+int
+set_arg (struct syscall_info *si, char *opt, bool *arch_set)
+{
+	int gnu_opt_result, unix_opt_result;
+
+	gnu_opt_result = parse_gnu_opt(si, opt, arch_set);
+
+	switch (gnu_opt_result) {
+	case 0:
+		return(0);
+	case 1:
+		return(1);
+	}
+
+	unix_opt_result = parse_unix_opt(si, opt, arch_set);
+
+	switch (unix_opt_result) {
+	case 0:
+		return(0);
+	case 1:
+		return(1);
+	}
+
+	return(2);
 }
 
 struct syscall_info
 get_sysinfo (int argc, char **arg)
 {
 	struct syscall_info si;
-	int i, arg_cntr;
+	int i, arg_cntr, set_arg_result;
 	bool arch_set, fnas;
 
 	arch_set = fnas = false;
@@ -131,18 +206,22 @@ get_sysinfo (int argc, char **arg)
 	si.sa.search_name = false;
 
 	for (i = 0; i < argc; i++) {
-		if (strncmp(arg[i], "--", 2) == 0) {
-			if (set_arg(&si, arg[i], &fnas) != 0) {
-				printf(
-					"Unrecognised option `%s`.\n"
-					"Use --help for help\n",
-					arg[i]
-				);
-				exit(1);
-			}
+		set_arg_result =
+			set_arg(&si, arg[i], &fnas);
+
+		switch (set_arg_result) {
+		case 0:
 			if (fnas == true)
 				arch_set = true;
 			arg_cntr++;
+			break;
+		case 1:
+			printf(
+				"Unrecognised option `%s`.\n"
+				"Use --help for help\n",
+				arg[i]
+			);
+			exit(1);
 		}
 	}
 
@@ -150,30 +229,17 @@ get_sysinfo (int argc, char **arg)
 
 	if (arch_set == false) {
 		#if defined __x86_64__
-		goto set_x86_64;
+		set_arch(&si, X86_64);
 		#elif defined __arm__
-		goto set_arm;
+		set_arch(&si, ARM);
 		#elif defined __aarch64__
-		goto set_aarch64;
+		set_arch(&si, AARCH64);
 		#elif defined __i386__
-		goto set_x86;
+		set_arch(&si, X86);
 		#endif
 	}
 
 	return(si);
-
-	set_x86_64:
-		set_arch(&si, X86_64);
-		return(si);
-	set_arm:
-		set_arch(&si, ARM);
-		return(si);
-	set_aarch64:
-		set_arch(&si, AARCH64);
-		return(si);
-	set_x86:
-		set_arch(&si, X86);
-		return(si);
 }
 
 int

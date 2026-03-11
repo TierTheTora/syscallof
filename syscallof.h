@@ -39,6 +39,16 @@ void print_help ();
 void set_arch (struct syscall_info *si,
                enum arch ar);
 
+int
+parse_gnu_opt (struct syscall_info *si,
+                char *opt,
+                bool *arch_set);
+
+int
+parse_unix_opt (struct syscall_info *si,
+                char *opt,
+                bool *arch_set);
+
 int set_arg (struct syscall_info *si,
              char *opt,
              bool *arch_set);
