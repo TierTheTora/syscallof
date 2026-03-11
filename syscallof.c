@@ -42,7 +42,7 @@ sgetsys_ent (struct syscall_info si, char *target)
 void
 print_help ()
 {
-	puts("Usage: syscallof [OPTIONS...] NUMBERS...\n"
+	puts("Usage: syscallof [OPTIONS...] IDENTIFIERS...\n"
 	     "Options:\n"
 	     "\t-x, --x86_64   use x86_64  syscall table\n"
 	     "\t-a, --arm      use arm     syscall table\n"
