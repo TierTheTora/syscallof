@@ -44,13 +44,13 @@ print_help ()
 {
 	puts("Usage: syscallof [OPTIONS...] NUMBERS...\n"
 	     "Options:\n"
-	     "\t--x86_64   use x86_64  syscall table\n"
-	     "\t--arm      use arm     syscall table\n"
-	     "\t--aarch64  use aarch64 syscall table\n"
-	     "\t--x86      use x86     syscall table\n"
+	     "\t-x, --x86_64   use x86_64  syscall table\n"
+	     "\t-a, --arm      use arm     syscall table\n"
+	     "\t-A, --aarch64  use aarch64 syscall table\n"
+	     "\t-X, --x86      use x86     syscall table\n"
 	     "\n"
-	     "\t--help  show this text\n"
-	     "\t--name  search by syscall name not number\n"
+	     "\t-h, --help  show this text\n"
+	     "\t-n, --name  search by syscall name\n"
 	);
 	exit(0);
 }
